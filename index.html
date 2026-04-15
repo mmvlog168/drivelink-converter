@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>DriveLink Converter | Google Drive & Dropbox Direct Link Generator</title>
+    <meta name="description" content="The simplest Google Drive and Dropbox URL converter. Paste your share link and get a direct download URL for videos, audio, and files instantly. Free, no login required.">
+    <link rel="icon" type="image/svg+xml" href="https://unpkg.com/feather-icons@4.29.2/dist/icons/link.svg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 20px 0 40px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.98);
+            border-radius: 48px;
+            padding: 40px 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.02);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .lang-switch {
+            text-align: right;
+            margin-bottom: 24px;
+        }
+        .lang-btn {
+            background: transparent;
+            border: none;
+            font-size: 14px;
+            padding: 6px 12px;
+            margin-left: 8px;
+            cursor: pointer;
+            border-radius: 40px;
+            color: #666;
+            font-weight: 500;
+        }
+        .lang-btn.active {
+            background: #1a73e8;
+            color: white;
+        }
+        .lang-btn:not(.active):hover {
+            background: #e8eaed;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        h1 {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 12px;
+        }
+        .sub {
+            color: #5f6368;
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #202124;
+            font-size: 14px;
+        }
+        .url-input {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 15px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 32px;
+            font-family: monospace;
+            transition: all 0.2s;
+            background: white;
+        }
+        .url-input:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+        }
+
+        .convert-btn {
+            width: 100%;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 16px 28px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 48px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(26,115,232,0.3);
+        }
+        .convert-btn:hover {
+            background: #1557b0;
+            transform: scale(0.98);
+        }
+
+        .result-area {
+            background: #f1f3f4;
+            border-radius: 32px;
+            padding: 20px;
+            margin-top: 8px;
+            display: none;
+        }
+        .result-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a73e8;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .result-url {
+            background: white;
+            padding: 14px 16px;
+            border-radius: 28px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 14px;
+            margin-bottom: 16px;
+            border: 1px solid #dadce0;
+        }
+        .copy-btn {
+            background: #34a853;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .copy-btn:hover {
+            background: #2c8e47;
+        }
+
+        .tip {
+            margin-top: 24px;
+            padding: 16px;
+            background: #e8f0fe;
+            border-radius: 24px;
+            font-size: 13px;
+            color: #174ea6;
+            line-height: 1.5;
+        }
+
+        .error-msg {
+            color: #d93025;
+            margin-top: 12px;
+            font-size: 14px;
+            min-height: 40px;
+        }
+
+        .ad-container {
+            margin-top: 32px;
+            text-align: center;
+            padding: 16px;
+            background: rgba(0,0,0,0.02);
+            border-radius: 24px;
+            font-size: 12px;
+            color: #aaa;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed #ddd;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        @media (max-width: 560px) {
+            .card { padding: 28px 20px; }
+            h1 { font-size: 28px; }
+            .logo { font-size: 40px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <div class="lang-switch">
+            <button class="lang-btn" data-lang="zh">中文</button>
+            <button class="lang-btn active" data-lang="en">English</button>
+        </div>
+
+        <div class="logo">🔗</div>
+        <h1 id="mainTitle">DriveLink Converter</h1>
+        <div id="subText" class="sub">Paste your share link from Google Drive or Dropbox</div>
+
+        <div class="input-group">
+            <label id="inputLabel">🔗 Cloud Drive Share Link</label>
+            <input type="text" id="gdriveUrl" class="url-input" placeholder="https://drive.google.com/file/d/.../view  or  https://www.dropbox.com/s/...  or  https://www.dropbox.com/scl/fi/...">
+        </div>
+
+        <button id="convertBtn" class="convert-btn">⚡ Generate Direct Link</button>
+
+        <div id="resultBox" class="result-area">
+            <div id="resultLabel" class="result-label">✅ Direct Link Ready</div>
+            <div id="directLink" class="result-url"></div>
+            <button id="copyResultBtn" class="copy-btn">📋 Copy URL</button>
+        </div>
+
+        <div id="errorMsg" class="error-msg"></div>
+
+        <div class="tip" id="tipText">
+            💡 <strong>How to get a shareable link:</strong><br>
+            • <strong>Google Drive:</strong> Right-click file → Share → "Anyone with the link" → Copy link<br>
+            • <strong>Dropbox:</strong> Right-click file → Share → Create link → Copy link (supports both old /s/ and new /scl/fi/ formats)
+        </div>
+
+        <div class="ad-container" id="adSlot">
+            <span id="adPlaceholder">📢 廣告區 (未來放置 Adsense)</span>
+        </div>
+    </div>
+    <div class="footer">
+        DriveLink Converter · Free · No login required
+    </div>
+</div>
+
+<script>
+    // ---------- 多語言詞庫 ----------
+    const translations = {
+        zh: {
+            mainTitle: "DriveLink 轉換器",
+            sub: "貼上 Google Drive 或 Dropbox 的分享連結",
+            inputLabel: "🔗 雲端硬碟分享連結",
+            placeholder: "https://drive.google.com/file/d/.../view  或  https://www.dropbox.com/s/...  或  https://www.dropbox.com/scl/fi/...",
+            convertBtn: "⚡ 產生實體連結",
+            resultLabel: "✅ 可直接使用的直鏈",
+            copyBtn: "📋 複製網址",
+            tip: "💡 <strong>如何取得分享連結：</strong><br>• <strong>Google Drive：</strong>右鍵檔案 → 共用 → 「知道連結的任何人」→ 複製連結<br>• <strong>Dropbox：</strong>右鍵檔案 → 分享 → 建立連結 → 複製連結（支援新舊兩種格式）",
+            copySuccess: "✅ 已複製！",
+            emptyUrl: "⚠️ 請貼上 Google Drive 或 Dropbox 的分享連結",
+            invalidUrl: "❌ 無法辨識這個網址。請貼上正確的：\n• Google Drive: drive.google.com/file/d/.../view\n• Dropbox: dropbox.com/s/... 或 dropbox.com/scl/fi/...",
+            footer: "DriveLink 轉換器 · 完全免費 · 無需登入"
+        },
+        en: {
+            mainTitle: "DriveLink Converter",
+            sub: "Paste your share link from Google Drive or Dropbox",
+            inputLabel: "🔗 Cloud Drive Share Link",
+            placeholder: "https://drive.google.com/file/d/.../view  or  https://www.dropbox.com/s/...  or  https://www.dropbox.com/scl/fi/...",
+            convertBtn: "⚡ Generate Direct Link",
+            resultLabel: "✅ Direct Link Ready",
+            copyBtn: "📋 Copy URL",
+            tip: "💡 <strong>How to get a shareable link:</strong><br>• <strong>Google Drive:</strong> Right-click file → Share → 'Anyone with the link' → Copy link<br>• <strong>Dropbox:</strong> Right-click file → Share → Create link → Copy link (supports both old /s/ and new /scl/fi/ formats)",
+            copySuccess: "✅ Copied!",
+            emptyUrl: "⚠️ Please paste a Google Drive or Dropbox share link",
+            invalidUrl: "❌ Invalid URL. Please paste a valid link from:\n• Google Drive: drive.google.com/file/d/.../view\n• Dropbox: dropbox.com/s/... or dropbox.com/scl/fi/...",
+            footer: "DriveLink Converter · Free · No login required"
+        }
+    };
+
+    let currentLang = 'en';
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        const t = translations[lang];
+        document.getElementById('mainTitle').innerText = t.mainTitle;
+        document.getElementById('subText').innerText = t.sub;
+        document.getElementById('inputLabel').innerHTML = t.inputLabel;
+        document.getElementById('gdriveUrl').placeholder = t.placeholder;
+        document.getElementById('convertBtn').innerHTML = t.convertBtn;
+        document.getElementById('resultLabel').innerHTML = t.resultLabel;
+        document.getElementById('copyResultBtn').innerHTML = t.copyBtn;
+        document.getElementById('tipText').innerHTML = t.tip;
+        document.querySelector('.footer').innerHTML = t.footer;
+        
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            if(btn.getAttribute('data-lang') === lang) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    // 自動補上 https://
+    function normalizeUrl(input) {
+        let url = input.trim();
+        if (!url.match(/^https?:\/\//i)) {
+            url = 'https://' + url;
+        }
+        return url;
+    }
+
+    // 提取 Google Drive 檔案 ID
+    function extractGoogleDriveId(url) {
+        if (/^[a-zA-Z0-9_-]{25,}$/.test(url.trim())) return url.trim();
+        let match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (match) return match[1];
+        match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (match) return match[1];
+        return null;
+    }
+
+    // 轉換 Dropbox 連結（支援新舊格式）
+    function convertDropboxLink(url) {
+        let match = null;
+        let fileId = null;
+        let fileName = null;
+        let rlkey = null;
+        
+        // 新版格式：/scl/fi/檔案ID/檔名?rlkey=xxx&dl=0
+        match = url.match(/dropbox\.com\/scl\/fi\/([a-zA-Z0-9_-]+)\/([^?]+)\?rlkey=([a-zA-Z0-9_-]+)/);
+        if (match) {
+            fileId = match[1];
+            fileName = match[2].split('?')[0].split('#')[0];
+            rlkey = match[3];
+            // 新版直鏈格式：必須保留 rlkey 參數，並改用 dl=1 強制下載
+            return `https://dl.dropboxusercontent.com/scl/fi/${fileId}/${fileName}?rlkey=${rlkey}&dl=1`;
+        }
+        
+        // 舊版格式：/s/檔案ID/檔名?dl=0
+        match = url.match(/dropbox\.com\/s\/([a-zA-Z0-9_-]+)\/([^?]+)/);
+        if (match) {
+            fileId = match[1];
+            fileName = match[2].split('?')[0].split('#')[0];
+            return `https://dl.dropboxusercontent.com/s/${fileId}/${fileName}`;
+        }
+        
+        return null;
+    }
+
+    function showError(msg) {
+        const errorDiv = document.getElementById('errorMsg');
+        if (errorDiv) {
+            errorDiv.textContent = msg;
+        } else {
+            alert(msg);
+        }
+    }
+
+    function showResult(directUrl, type) {
+        const resultBox = document.getElementById('resultBox');
+        const directLinkSpan = document.getElementById('directLink');
+        const resultLabel = document.getElementById('resultLabel');
+        const errorDiv = document.getElementById('errorMsg');
+        
+        if (errorDiv) errorDiv.textContent = '';
+        
+        directLinkSpan.innerText = directUrl;
+        
+        if (resultLabel && type) {
+            const prefix = currentLang === 'zh' ? '✅ 已偵測到 ' : '✅ Detected ';
+            const suffix = currentLang === 'zh' ? ' · 可直接使用的直鏈' : ' · Direct Link Ready';
+            resultLabel.innerHTML = prefix + type + suffix;
+        }
+        
+        resultBox.style.display = 'block';
+        resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function convertLink() {
+        const rawInput = document.getElementById('gdriveUrl').value.trim();
+        const errorDiv = document.getElementById('errorMsg');
+        const resultBox = document.getElementById('resultBox');
+        
+        if (errorDiv) errorDiv.textContent = '';
+        resultBox.style.display = 'none';
+        
+        // 空值檢查
+        if (!rawInput) {
+            showError(translations[currentLang].emptyUrl);
+            return;
+        }
+        
+        // 自動補上協議
+        const input = normalizeUrl(rawInput);
+        
+        let directUrl = null;
+        let detectedType = null;
+        
+        // 檢查 Google Drive
+        const fileId = extractGoogleDriveId(input);
+        if (fileId) {
+            directUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+            detectedType = 'Google Drive';
+        }
+        
+        // 檢查 Dropbox
+        if (!directUrl) {
+            directUrl = convertDropboxLink(input);
+            if (directUrl) detectedType = 'Dropbox';
+        }
+        
+        // 都失敗
+        if (!directUrl) {
+            showError(translations[currentLang].invalidUrl);
+            return;
+        }
+        
+        showResult(directUrl, detectedType);
+    }
+
+    function copyToClipboard() {
+        const urlText = document.getElementById('directLink').innerText;
+        if (!urlText) return;
+        navigator.clipboard.writeText(urlText).then(() => {
+            const originalText = document.getElementById('copyResultBtn').innerText;
+            document.getElementById('copyResultBtn').innerText = translations[currentLang].copySuccess;
+            setTimeout(() => {
+                document.getElementById('copyResultBtn').innerText = originalText;
+            }, 1500);
+        }).catch(() => {
+            alert('手動複製吧：\n' + urlText);
+        });
+    }
+
+    document.getElementById('convertBtn').addEventListener('click', convertLink);
+    document.getElementById('copyResultBtn').addEventListener('click', copyToClipboard);
+    document.getElementById('gdriveUrl').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') convertLink();
+    });
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const lang = btn.getAttribute('data-lang');
+            setLanguage(lang);
+        });
+    });
+
+    setLanguage('en');
+</script>
+</body>
+</html>
